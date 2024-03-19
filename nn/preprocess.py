@@ -20,7 +20,24 @@ def sample_seqs(seqs: List[str], labels: List[bool]) -> Tuple[List[str], List[bo
         sampled_labels: List[bool]
             List of labels for the sampled sequences
     """
-    pass
+    np.random.seed(42)
+    # Given that there are far more positives than negatives, sample
+    # positive sequences with replacement and negatives without. 
+    negative = seqs[labels==0]
+    positive = seqs[labels==1]
+    idx_negative = np.random.choice(range(len(negative)), 500, replace=False)
+    sampled_seqs = negative[idx_negative]
+    sampled_labels = np.zeros(500)
+    idx_positive = np.random.choice(range(len(positive)), 500, replace=True)
+    sampled_seqs = np.concatenate((sampled_seqs, positive[idx_positive]))
+    sampled_labels = np.concatenate((sampled_labels, np.ones(500)))
+    # Scramble sampled seqs and labels
+    idx = np.random.choice(range(len(sampled_seqs)), 1000, replace=False)
+    sampled_seqs = sampled_seqs[idx]
+    sampled_labels = sampled_labels[idx]
+    
+    return sampled_seqs, sampled_labels
+    
 
 def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
     """
@@ -41,4 +58,14 @@ def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
                 G -> [0, 0, 0, 1]
             Then, AGA -> [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0].
     """
-    pass
+    code = {'A': [1, 0, 0, 0],
+            'T': [0, 1, 0, 0],
+            'C': [0, 0, 1, 0],
+            'G': [0, 0, 0, 1] }
+    encodings = []
+    for s in seq_arr:
+        encodings.append( np.concatenate([code[base] for base in s]) )
+        
+    return np.matrix(encodings)
+        
+        
